@@ -74,9 +74,6 @@ The game continues until the board is full or no valid moves are possible. The p
 - **Real-Time Communication**: WebSockets
 - **Hosting**: Render.com for the backend and vercel.com for frontend
 
-### Demo
-* https://play-othello.vercel.app/
-
 
 ## Project Setup
 
