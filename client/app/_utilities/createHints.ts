@@ -1,0 +1,292 @@
+import { IMove } from "@/_types";
+import { EGamer } from "@/_enums";
+import { BOARD_DIMENSION } from "@/_constants";
+
+export default function createHints(board: IMove[], opponentStones: IMove[], activeGamer: EGamer) {
+    return [
+        ...topLeft(board, opponentStones, activeGamer),
+        ...top(board, opponentStones, activeGamer),
+        ...topRight(board, opponentStones, activeGamer),
+        ...right(board, opponentStones, activeGamer),
+        ...bottomRight(board, opponentStones, activeGamer),
+        ...bottom(board, opponentStones, activeGamer),
+        ...bottomLeft(board, opponentStones, activeGamer),
+        ...left(board, opponentStones, activeGamer),
+    ]
+}
+
+function topLeft(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+    for (const stone of opponentStones) {
+        if (stone.row == 0) continue;
+
+        const rowIndex: number = stone.row;
+        const colIndex: number = stone.col;
+        const index: number = rowIndex * BOARD_DIMENSION + colIndex;
+        const toTopLeftIndex: number = (index - BOARD_DIMENSION - 1);
+        const isFirstCol: boolean = colIndex === 0;
+
+        if (isFirstCol || board[toTopLeftIndex]?.gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+        let toBottomRight: IMove | undefined = stone;
+
+        while (!isActiveGamerLinked) {
+            toBottomRight = board.find(item => item.row == (toBottomRight?.row || 0) + 1 && item.col == (toBottomRight?.col || 0) + 1);
+
+            if (!toBottomRight?.gamer) {
+                break;
+            }
+
+            if (toBottomRight?.gamer == activeGamer) {
+                isActiveGamerLinked = true;
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toTopLeftIndex)
+        }
+    }
+
+    return hints;
+}
+
+function top(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+
+    for (const stone of opponentStones) {
+        if (stone.row == 0) continue;
+
+        const index: number = (stone.row) * BOARD_DIMENSION + (stone.col);
+        const toTopIndex: number = index - BOARD_DIMENSION;
+
+        if (board[toTopIndex].gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+        let toBottomRow: number = stone.row;
+
+        while (!isActiveGamerLinked) {
+            toBottomRow += 1;
+            if (toBottomRow > BOARD_DIMENSION - 1) {
+                break;
+            }
+            const toBottomRowItem = board.find(item => item.row == toBottomRow && item.col == stone.col);
+
+            if (!toBottomRowItem?.gamer) {
+                break;
+            }
+
+            if (toBottomRowItem.gamer == activeGamer) {
+                isActiveGamerLinked = true;
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toTopIndex)
+        }
+    }
+
+    return hints;
+}
+
+function topRight(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+
+    for (const stone of opponentStones) {
+        if (stone.row == 0) continue;
+
+        const rowIndex: number = stone.row;
+        const colIndex: number = stone.col;
+        const index: number = rowIndex * BOARD_DIMENSION + colIndex;
+
+        const toTopRightIndex: number = (index - BOARD_DIMENSION + 1)
+        const isFirstRowOrLastCol: boolean = rowIndex === 0 || colIndex === BOARD_DIMENSION - 1;
+
+        if (isFirstRowOrLastCol || board[toTopRightIndex]?.gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+        let toTop: IMove | undefined = stone;
+
+        while (!isActiveGamerLinked) {
+            toTop = board.find(item => item.row == (toTop?.row || 0) + 1 && item.col == (toTop?.col || 0) - 1);
+
+            if (!toTop?.gamer) {
+                break;
+            }
+
+            if (toTop?.gamer == activeGamer) {
+                isActiveGamerLinked = true;
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toTopRightIndex)
+        }
+    }
+
+    return hints;
+}
+
+function right(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+
+    for (const stone of opponentStones) {
+        if (stone.col == BOARD_DIMENSION - 1) continue;
+        const index: number = (stone.row) * BOARD_DIMENSION + (stone.col);
+        const toRightIndex: number = index + 1;
+
+        if (board[toRightIndex].gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+        let toLeft: IMove | undefined = stone;
+
+        while (!isActiveGamerLinked) {
+            toLeft = board.find(item => item.row == (stone?.row || 0) && item.col == (toLeft?.col || 0) - 1);
+            if (!toLeft?.gamer) break;
+
+            if (toLeft?.gamer == activeGamer) {
+                isActiveGamerLinked = true
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toRightIndex)
+        }
+    }
+
+    return hints;
+}
+
+function bottomRight(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+
+    for (const stone of opponentStones) {
+        if (stone.row >= BOARD_DIMENSION - 1 || stone.col == BOARD_DIMENSION - 1) continue;
+
+        const rowIndex: number = stone.row;
+        const colIndex: number = stone.col;
+        const index: number = rowIndex * BOARD_DIMENSION + colIndex;
+        const toBottomRightIndex: number = index + BOARD_DIMENSION + 1;
+
+        if (board[toBottomRightIndex]?.gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+        let toBottomRight: IMove | undefined = stone;
+
+        while (!isActiveGamerLinked) {
+            toBottomRight = board.find(item => item.row == (toBottomRight?.row || 0) - 1 && item.col == (toBottomRight?.col || 0) - 1);
+
+            if (!toBottomRight?.gamer) {
+                break;
+            }
+            if (toBottomRight?.gamer == activeGamer) {
+                isActiveGamerLinked = true
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toBottomRightIndex)
+        }
+    }
+
+    return hints;
+}
+
+function bottom(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+
+    for (const stone of opponentStones) {
+        if (stone.row >= BOARD_DIMENSION - 1) continue;
+
+        const index: number = (stone.row) * BOARD_DIMENSION + (stone.col);
+        const toBottomIndex: number = index + BOARD_DIMENSION;
+
+        if (board[toBottomIndex].gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+        let toTopRow: number = stone.row;
+
+        while (!isActiveGamerLinked) {
+            toTopRow -= 1;
+            if (toTopRow < 0) {
+                break
+            }
+            const toTopRowItem = board.find(item => item.row == toTopRow && item.col == stone.col);
+            if (!toTopRowItem?.gamer) {
+                break
+            }
+            if (toTopRowItem?.gamer == activeGamer) {
+                isActiveGamerLinked = true;
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toBottomIndex)
+        }
+    }
+
+    return hints;
+}
+
+function bottomLeft(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+
+    for (const stone of opponentStones) {
+        if (stone.row >= BOARD_DIMENSION - 1 || stone.col == 0) continue;
+
+        const index: number = stone.row * BOARD_DIMENSION + stone.col;
+        const toBottomLeftIndex: number = index + BOARD_DIMENSION - 1;
+
+        if (board[toBottomLeftIndex]?.gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+
+        let toBottomLeft: IMove | undefined = stone;
+
+        while (!isActiveGamerLinked) {
+            toBottomLeft = board.find(item => item.row == (toBottomLeft?.row || 0) - 1 && item.col == (toBottomLeft?.col || 0) + 1);
+            if (!toBottomLeft?.gamer) break;
+
+            if (toBottomLeft?.gamer == activeGamer) {
+                isActiveGamerLinked = true;
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toBottomLeftIndex)
+        }
+    }
+
+    return hints;
+}
+
+function left(board: IMove[], opponentStones: IMove[], activeGamer: EGamer): number[] {
+    const hints: number[] = [];
+
+    for (const stone of opponentStones) {
+        if (stone.col == 0) continue;
+        const index = (stone.row) * BOARD_DIMENSION + (stone.col);
+
+        const toLeftIndex: number = index - 1;
+
+        if (board[toLeftIndex].gamer) continue;
+
+        let isActiveGamerLinked: boolean = false;
+        let toRight: IMove | undefined = stone;
+
+        while (!isActiveGamerLinked) {
+            toRight = board.find(item => item.row == (stone?.row || 0) && item.col == (toRight?.col || 0) + 1);
+            if (!toRight?.gamer) break;
+
+            if (toRight?.gamer == activeGamer) {
+                isActiveGamerLinked = true
+            }
+        }
+
+        if (isActiveGamerLinked) {
+            hints.push(toLeftIndex)
+        }
+    }
+
+    return hints;
+}
