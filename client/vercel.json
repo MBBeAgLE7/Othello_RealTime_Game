@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/room/:path*",
-      "destination": "/"
+      "destination": "/room/:path*"
     }
   ]
 }
